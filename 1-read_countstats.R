@@ -27,12 +27,13 @@ all(file.exists(files)) # need to navigate into samples directory for this to wo
 txi.kallisto.tsv <- tximport(files, type = "kallisto", countsFromAbundance = "scaledTPM", ignoreAfterBar = TRUE, txIn=TRUE, txOut=TRUE)
 colData<-read.csv("~/Documents/FROG/")
 setwd("~/Documents/FROG/")
+save(txi.kallisto.tsv, file="txi_and_colData.RData")
 colData$Timepoint<-as.factor(colData$Timepoint)
 # ==================================================================================
 
 
 # if already have a txi object, load it with the metadata (colData)
-load("~/Documents/bmc/Data/txi_and_colData.RData")
+load("txi_and_colData.RData")
 
 # check that order of samples in metadata and txi object are the same
 order<-colData$Sample
