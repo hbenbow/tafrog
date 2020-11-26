@@ -12,28 +12,12 @@ library(Hmisc)
 library(corrplot)
 allowWGCNAThreads()
 
-# where are kalliso files?
-fp<-"~/Documents/FROG/samples/"
-# Import kallisto files with txi 
-# ==================================================================================
-# Use these steps to import kallisto files
-samples<-dir(fp) # where the directory 'samples'
-# contains the kallisto output directories - 1 per sample.
-files <- file.path(samples, "abundance.h5")
-setwd(fp)
-names(files) <- paste0(samples)
-all(file.exists(files)) # need to navigate into samples directory for this to work!!
-txi.kallisto.tsv <- tximport(files, type = "kallisto", countsFromAbundance = "scaledTPM", ignoreAfterBar = TRUE, txIn=TRUE, txOut=TRUE)
-colData<-read.csv("~/Documents/FROG/metadata.csv")
 setwd("~/Documents/FROG/")
-save(txi.kallisto.tsv, colData, file="txi_and_colData.RData")
-colData$Timepoint<-as.factor(colData$Timepoint)
 # ==================================================================================
-
-
 # if already have a txi object, load it with the metadata (colData)
-load("txi_and_colData.RData")
-
+colData<-read.csv("~/Documents/FROG/metadata.csv")
+load("~/Documents/FROG/txi.RData")
+colData$Timepoint<-as.factor(colData$Timepoint)
 # check that order of samples in metadata and txi object are the same
 
 # ==================================================================================
@@ -62,6 +46,46 @@ for(i in unique(expressed$Factor)){
   write.csv(data, file=paste("~/Documents/FROG/", factor, ".csv", sep=""))
   assign(factor, data)
 }
+
+# N1O vs N1W comparison is called "N1"
+# M2O vs M2W comparison is called "M2"
+# F2O vs F2W comparison is called "F2"
+# F2O vs M2O comparison is called "FO"
+# F2W vs M2W comparison is called "W2"
+
+N1<-rbind(N1O,N1W)
+M2<-rbind(M2O,M2W)
+F2<-rbind(F2O,F2W)
+FO<-rbind(F2O,M2O)
+W2<-rbind(F2W,M2W)
+
+N1<-N1[!(duplicated(N1$GeneID)),]
+M2<-M2[!(duplicated(M2$GeneID)),]
+F2<-F2[!(duplicated(F2$GeneID)),]
+FO<-FO[!(duplicated(FO$GeneID)),]
+W2<-W2[!(duplicated(W2$GeneID)),]
+
+N1$Comparison<-"N1"
+M2$Comparison<-"M2"
+F2$Comparison<-"F2"
+FO$Comparison<-"FO"
+W2$Comparison<-"W2"
+
+N1<-N1[,c(2, 10)]
+M2<-M2[,c(2, 10)]
+F2<-F2[,c(2, 10)]
+FO<-FO[,c(2, 10)]
+W2<-W2[,c(2, 10)]
+
+all_filtered_lists<-rbind(N1,
+                          M2,
+                          F2,
+                          FO,
+                          W2)
+
+write.csv(all_filtered_lists, file="~/Documents/FROG/all_lists_filtered.csv", row.names = F)
+
+
 write.csv(expressed_genes, file="~/Documents/FROG/all_gene_counts.csv")
 write.csv(tpm, file="~/Documents/FROG/all_gene_tpm.csv", row.names=T)
 
@@ -88,5 +112,7 @@ ggplot(pcaData, aes(x=PC1, y=PC2)) + geom_point(aes(colour=Genotype, shape=Treat
   theme(text = element_text(size=20, colour="black"),
         axis.text.x = element_text(colour="black"))
 
+
+write.csv(pcaData, file="~/Documents/FROG/pcadata.csv")
 vst_counts<-assay(vsd)
 
