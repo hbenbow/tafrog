@@ -91,9 +91,11 @@ all<-all %>%
     comparison == "W2" ~ "F2W vs M2W",
   ))
 all$comparison<-NULL
+all_total<-all
 all<-all[(all$padj<0.05),]
 all<-na.omit(all)
 
 table(all$Comparison)
 write.csv(all, file="all_separate.csv")
+amelie_genes<-subset(all_total, all_total$row %in% tafrog_rnaseq_all_transcripts_id$V1)
 
